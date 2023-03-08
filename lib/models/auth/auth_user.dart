@@ -1,14 +1,14 @@
 class AuthUser {
-  final int uid;
-  final String firstName;
-  final String lastName;
-  final String email;
-  final String phoneNumber;
-  final bool isEmailVerified;
-  final bool isStaff;
-  final bool isSuperuser;
+  int uid;
+  String firstName;
+  String lastName;
+  String email;
+  String phoneNumber;
+  bool isEmailVerified;
+  bool isStaff;
+  bool isSuperuser;
 
-  const AuthUser({
+  AuthUser({
     required this.uid,
     required this.firstName,
     required this.lastName,

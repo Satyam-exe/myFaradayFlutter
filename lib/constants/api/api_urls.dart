@@ -5,3 +5,4 @@ const passwordResetAPIUrl = '${apiUrl}auth/passwordreset/';
 const confirmPasswordResetAPIUrl = '${apiUrl}auth/passwordresetconfirm/';
 const sendEmailVerificationAPIUrl = '${apiUrl}auth/sendemailverification/';
 const verifyEmailAPIUrl = '${apiUrl}auth/verifyemail/';
+const getUsersAPIUrl = '${apiUrl}auth/users/';

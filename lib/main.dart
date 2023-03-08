@@ -1,23 +1,26 @@
+import 'package:app/constants/routes.dart';
+import 'package:app/views/auth/log_in_view.dart';
+import 'package:app/views/auth/sign_up.dart';
+import 'package:app/views/logged_in_view.dart';
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(
+    MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // is not restarted.
         primarySwatch: Colors.blue,
       ),
       home: const MyHomePage(),
-    );
-  }
+      routes: {
+        homeRoute: (context) => const MyHomePage(),
+        signUpRoute: (context) => const SignUpView(),
+        loggedInRoute: (context) => const LoggedInView(),
+        logInRoute: (context) => const LogInView(),
+      },
+    ),
+  );
 }
 
 class MyHomePage extends StatelessWidget {
@@ -25,6 +28,6 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return const SignUpView();
   }
 }

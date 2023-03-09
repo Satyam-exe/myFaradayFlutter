@@ -20,6 +20,8 @@ class InternalServerErrorAuthException implements Exception {}
 
 class IntegrityErrorAuthException implements Exception {}
 
+class EmptyFieldsAuthException implements Exception {}
+
 // generic exceptions
 
 class GenericAuthException implements Exception {}

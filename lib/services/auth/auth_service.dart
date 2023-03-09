@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:app/models/auth/auth_user.dart';
 import 'package:app/services/api/auth/auth_api.dart' as api;
 import 'package:app/services/auth/auth_exceptions.dart';
@@ -18,15 +19,25 @@ class AuthService {
 
   Future<AuthUser> getUserByEmail(String email) async {
     final response = await api.getUserByEmailAPIResponse(email);
-    return AuthUser.fromJson(jsonDecode(response.body));
+    final decodedJson = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      return AuthUser.fromJson(decodedJson);
+    } else {
+      throw UserNotFoundAuthException();
+    }
   }
 
-  Future<AuthUser> getUserByPhoneNumber(int phoneNumber) async {
+  Future<AuthUser> getUserByPhoneNumber(String phoneNumber) async {
     final response = await api.getUserByPhoneNumberAPIResponse(phoneNumber);
-    return AuthUser.fromJson(jsonDecode(response.body));
+    final decodedJson = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      return AuthUser.fromJson(decodedJson);
+    } else {
+      throw UserNotFoundAuthException();
+    }
   }
 
-  Future<AuthUser> logIn({
+  Future<AuthUser?> logIn({
     required String email,
     required String password,
   }) async {
@@ -63,12 +74,17 @@ class AuthService {
       phoneNumber,
       password,
     );
-    final decodedJson = json.decode(response.body);
+    final decodedJson = jsonDecode(response.body);
+    log(decodedJson.toString());
     if (response.statusCode == 201) {
-      AuthUser createdUser = AuthUser.fromJson(jsonDecode(response.body));
+      AuthUser createdUser = AuthUser.fromJson(decodedJson);
       return createdUser;
     } else if (response.statusCode == 400) {
-      throw WeakPasswordAuthException();
+      if (decodedJson['error']['message'] == 'WEAK_PASSWORD') {
+        throw WeakPasswordAuthException();
+      } else {
+        throw EmptyFieldsAuthException();
+      }
     } else if (response.statusCode == 409) {
       final errorMessage = decodedJson['error']['message'];
       if (errorMessage == 'PHONE_NUMBER_ALREADY_IN_USE') {

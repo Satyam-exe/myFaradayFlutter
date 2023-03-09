@@ -1,6 +1,3 @@
-import 'dart:ffi';
-import 'dart:typed_data';
-
 import 'package:app/constants/api/api_urls.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -77,7 +74,9 @@ Future<http.Response> getUserByEmailAPIResponse(String email) async {
   return response;
 }
 
-Future<http.Response> getUserByPhoneNumberAPIResponse(int phoneNumber) async {
+Future<http.Response> getUserByPhoneNumberAPIResponse(
+  String phoneNumber,
+) async {
   final response = await http.get(
     Uri.parse('${getUsersAPIUrl}phone/$phoneNumber/'),
     headers: <String, String>{

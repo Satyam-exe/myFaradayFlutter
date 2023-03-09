@@ -1,8 +1,10 @@
 import 'package:app/constants/routes.dart';
 import 'package:app/services/auth/auth_exceptions.dart';
 import 'package:app/services/auth/auth_service.dart';
-import 'package:app/views/logged_in_view.dart';
+import 'package:app/utilities/dialogs/error_dialog.dart';
+import 'package:app/utilities/dialogs/success_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:app/utilities/form_validation/input_validation.dart';
 
 class SignUpView extends StatefulWidget {
   const SignUpView({super.key});
@@ -40,21 +42,21 @@ class _SignUpViewState extends State<SignUpView> {
         child: Column(
           children: <Widget>[
             TextFormField(
-              controller: _firstName,
-              decoration: const InputDecoration(
-                hintText: 'Enter your first name here.',
-                labelText: 'First Name',
-              ),
-              keyboardType: TextInputType.name,
-            ),
+                controller: _firstName,
+                decoration: const InputDecoration(
+                  hintText: 'Enter your first name here.',
+                  labelText: 'First Name',
+                ),
+                keyboardType: TextInputType.name,
+                validator: (value) => isFirstNameValid(value!)),
             TextFormField(
-              controller: _lastName,
-              decoration: const InputDecoration(
-                hintText: 'Enter your last name here.',
-                labelText: 'Last Name',
-              ),
-              keyboardType: TextInputType.name,
-            ),
+                controller: _lastName,
+                decoration: const InputDecoration(
+                  hintText: 'Enter your last name here.',
+                  labelText: 'Last Name',
+                ),
+                keyboardType: TextInputType.name,
+                validator: (value) => isLastNameValid(value!)),
             TextFormField(
               controller: _phoneNumber,
               decoration: const InputDecoration(
@@ -62,23 +64,24 @@ class _SignUpViewState extends State<SignUpView> {
                 labelText: 'Phone Number',
               ),
               keyboardType: TextInputType.phone,
+              validator: (value) => isPhoneNumberValid(value!),
             ),
             TextFormField(
-              controller: _email,
-              decoration: const InputDecoration(
-                hintText: 'Enter your email here.',
-                labelText: 'Email',
-              ),
-              keyboardType: TextInputType.emailAddress,
-            ),
+                controller: _email,
+                decoration: const InputDecoration(
+                  hintText: 'Enter your email here.',
+                  labelText: 'Email',
+                ),
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) => isEmailValid(value!)),
             TextFormField(
-              controller: _password,
-              decoration: const InputDecoration(
-                hintText: 'Enter your password here.',
-                labelText: 'Password',
-              ),
-              obscureText: true,
-            ),
+                controller: _password,
+                decoration: const InputDecoration(
+                  hintText: 'Enter your password here.',
+                  labelText: 'Password',
+                ),
+                obscureText: true,
+                validator: (value) => isPasswordValid(value!)),
             ElevatedButton(
               onPressed: () async {
                 final firstName = _firstName.text;
@@ -87,42 +90,83 @@ class _SignUpViewState extends State<SignUpView> {
                 final email = _email.text;
                 final password = _password.text;
                 try {
-                  final user = await AuthService().createUser(
-                    firstName: firstName,
-                    lastName: lastName,
-                    phoneNumber: phoneNumber,
-                    email: email,
-                    password: password,
-                  );
+                  if (_formKey.currentState!.validate()) {
+                    showDialog(
+                      barrierDismissible: false,
+                      builder: (context) {
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        );
+                      },
+                      context: context,
+                    );
+                    if (await checkIfIdentifiersAreAvailable(
+                          email,
+                          phoneNumber,
+                        ) ==
+                        true) {
+                      final user = await AuthService().createUser(
+                        firstName: firstName,
+                        lastName: lastName,
+                        phoneNumber: phoneNumber,
+                        email: email,
+                        password: password,
+                      );
+                      if (user != null) {
+                        if (!mounted) return;
+                        Navigator.of(context).pop();
+                        showSuccessDialog(context,
+                            'You have successfully signed up. Please verify your email before logging in.');
+                        dispose();
+                      }
+                    }
+                  }
                 } on WeakPasswordAuthException {
-                  // TODO: IMPLEMENT
+                  Navigator.of(context).pop();
+                  showErrorDialog(context, 'Please choose a stronger password');
+                } on EmptyFieldsAuthException {
+                  Navigator.of(context).pop();
+                  showErrorDialog(
+                      context, 'Please fill in all the fields appropriately.');
                 } on EmailAlreadyInUseAuthException {
-                  // TODO: IMPLEMENT
+                  Navigator.of(context).pop();
+                  showErrorDialog(context, 'This email is already in use.');
                 } on PhoneNumberAlreadyInUseAuthException {
-                  // TODO: IMPLEMENT
+                  Navigator.of(context).pop();
+                  showErrorDialog(
+                      context, 'This phone number is already in use');
                 } on BothIdentifiersAlreadyInUseAuthException {
-                  // TODO: IMPLEMENT
+                  Navigator.of(context).pop();
+                  showErrorDialog(
+                      context, 'The email and phone number are already in use');
                 } on InvalidEmailAuthException {
-                  // TODO: IMPLEMENT
+                  Navigator.of(context).pop();
+                  showErrorDialog(context, 'Please enter a valid email.');
                 } on InternalServerErrorAuthException {
-                  // TODO: IMPLEMENT
+                  Navigator.of(context).pop();
+                  showErrorDialog(context, 'Something went wrong.');
                 } on IntegrityErrorAuthException {
-                  // TODO: IMPLEMENT
+                  Navigator.of(context).pop();
+                  showErrorDialog(context, 'Something went wrong.');
                 } on GenericAuthException {
-                  // TODO: IMPLEMENT
+                  Navigator.of(context).pop();
+                  showErrorDialog(context, 'Something went wrong.');
                 }
               },
-              child: const Text('Submit'),
+              child: const Text('Sign Up'),
             ),
             TextButton(
-                onPressed: () {
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    logInRoute,
-                    (route) => false,
-                  );
-                },
-                child: const Text('Already registered? Log in here!')),
+              onPressed: () {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  logInRoute,
+                  (route) => false,
+                );
+              },
+              child: const Text('Already registered? Log in here!'),
+            ),
           ],
         ),
       ),

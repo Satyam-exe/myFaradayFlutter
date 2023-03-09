@@ -1,8 +1,9 @@
+import 'package:app/constants/routes.dart';
 import 'package:app/services/auth/auth_exceptions.dart';
 import 'package:app/services/auth/auth_service.dart';
+import 'package:app/utilities/dialogs/error_dialog.dart';
+import 'package:app/utilities/form_validation/input_validation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
 
 class LogInView extends StatefulWidget {
   const LogInView({super.key});
@@ -39,6 +40,7 @@ class _LogInViewState extends State<LogInView> {
                 hintText: 'Enter your email here.',
                 labelText: 'Email',
               ),
+              validator: (value) => isEmailValid(value!),
               keyboardType: TextInputType.emailAddress,
             ),
             TextFormField(
@@ -54,20 +56,67 @@ class _LogInViewState extends State<LogInView> {
                 final email = _email.text;
                 final password = _password.text;
                 try {
-                  final user = await AuthService().logIn(
-                    email: email,
-                    password: password,
-                  );
+                  if (_formKey.currentState!.validate()) {
+                    showDialog(
+                      barrierDismissible: false,
+                      builder: (context) {
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        );
+                      },
+                      context: context,
+                    );
+                    final user = await AuthService().logIn(
+                      email: email,
+                      password: password,
+                    );
+                    if (user != null) {
+                      if (!mounted) return;
+                      Navigator.of(context).pop();
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        loggedInRoute,
+                        (route) => false,
+                      );
+                    }
+                  }
                 } on InvalidCredentialsAuthException {
-                  // TODO: IMPLEMENT
+                  Navigator.of(context).pop();
+                  showErrorDialog(
+                      context, 'Invalid Credentials. Please Try Again.');
                 } on EmailNotVerifiedAuthException {
-                  // TODO: IMPLEMENT
+                  Navigator.of(context).pop();
+                  showErrorDialog(context,
+                      'Your email is not verified. Please verify it before logging in.');
                 } on GenericAuthException {
-                  // TODO: IMPLEMENT
+                  Navigator.of(context).pop();
+                  showErrorDialog(context, 'Something went wrong!');
                 }
               },
-              child: const Text('Submit'),
-            )
+              child: const Text('Log In'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  signUpRoute,
+                  (route) => false,
+                );
+              },
+              child: const Text('Don\'t have an account? Sign up here!'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  resetPasswordRoute,
+                  (route) => false,
+                );
+              },
+              child: const Text('Forgot Password?'),
+            ),
           ],
         ),
       ),

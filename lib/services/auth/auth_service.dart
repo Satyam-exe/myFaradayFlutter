@@ -3,14 +3,10 @@ import 'dart:developer';
 import 'package:app/models/auth/auth_user.dart';
 import 'package:app/services/api/auth/auth_api.dart' as api;
 import 'package:app/services/auth/auth_exceptions.dart';
-import 'package:flutter/widgets.dart';
-import 'package:http/http.dart';
+import 'package:app/services/crud/crud_service.dart';
 
 class AuthService {
-  AuthUser? get currentUser {
-    // TODO: implement currentUser
-    throw UnimplementedError();
-  }
+  Future<AuthUser> get currentUser => CRUDService().getCurrentUserFromDb();
 
   Future<AuthUser> getUserByUID(int uid) async {
     final response = await api.getUserByUIDAPIResponse(uid);

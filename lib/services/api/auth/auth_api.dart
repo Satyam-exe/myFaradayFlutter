@@ -29,15 +29,18 @@ Future<http.Response> signUpAPIResponse(
 Future<http.Response> logInAPIResponse(
   String email,
   String password,
+  int requestedTimeInDays,
 ) async {
   final response = await http.post(
     Uri.parse(logInAPIUrl),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },
-    body: jsonEncode(<String, String>{
+    body: jsonEncode(<String, dynamic>{
       'email': email,
       'password': password,
+      'requested_time_in_days': requestedTimeInDays.toDouble(),
+      'request_platform': 'flutter',
     }),
   );
   return response;
@@ -75,13 +78,59 @@ Future<http.Response> getUserByEmailAPIResponse(String email) async {
 }
 
 Future<http.Response> getUserByPhoneNumberAPIResponse(
-  String phoneNumber,
-) async {
+    String phoneNumber) async {
   final response = await http.get(
     Uri.parse('${getUsersAPIUrl}phone/$phoneNumber/'),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8'
     },
+  );
+  return response;
+}
+
+Future<http.Response> verifyMobileAuthTokenAPIResponse(
+  String token,
+  int uid,
+) async {
+  final response = await http.post(
+    Uri.parse(verifyMobileAuthTokenAPIUrl),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8'
+    },
+    body: json.encode(
+      <String, dynamic>{
+        'token': token,
+        'uid': uid,
+      },
+    ),
+  );
+  return response;
+}
+
+Future<http.Response> sendPasswordResetLinkAPIResponse(String email) async {
+  final response = await http.post(
+    Uri.parse(passwordResetAPIUrl),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8'
+    },
+    body: json.encode(
+      <String, String>{'email': email},
+    ),
+  );
+  return response;
+}
+
+Future<http.Response> revokeMobileAuthTokenAPIResponse(String token) async {
+  final response = await http.patch(
+    Uri.parse(mobileAuthTokenAPIUrl),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8'
+    },
+    body: json.encode(
+      <String, String>{
+        'token': token,
+      },
+    ),
   );
   return response;
 }

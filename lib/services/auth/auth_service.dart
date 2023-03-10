@@ -36,15 +36,24 @@ class AuthService {
   Future<AuthUser?> logIn({
     required String email,
     required String password,
+    required bool rememberMe,
   }) async {
-    final response = await api.logInAPIResponse(
-      email,
-      password,
-    );
+    late final int requestedTimeInDays;
+    if (rememberMe == true) {
+      requestedTimeInDays = 30;
+    } else {
+      requestedTimeInDays = 90;
+    }
+    final response =
+        await api.logInAPIResponse(email, password, requestedTimeInDays);
     final decodedJson = json.decode(response.body);
     if (response.statusCode == 200) {
       final uid = decodedJson['uid'];
-      return getUserByUID(uid);
+      final token = decodedJson['token'];
+      final user = await getUserByUID(uid);
+      await CRUDService().insertUserIntoDb(user);
+      await CRUDService().insertMobileAuthTokenIntoDb(token, user);
+      return user;
     } else if (response.statusCode == 400) {
       throw InvalidCredentialsAuthException();
     } else if (response.statusCode == 401) {
@@ -99,9 +108,14 @@ class AuthService {
     }
   }
 
-  Future<void> logOut() {
-    // TODO: implement logOut
-    throw UnimplementedError();
+  Future<void> logOut() async {
+    try {
+      await MobileTokenAuthService().revokeToken();
+      await CRUDService().deleteUserDb(await AuthService().currentUser);
+      await CRUDService().close();
+    } on Exception {
+      // Empty
+    }
   }
 
   Future<void> sendEmailVerification(String email) async {
@@ -115,5 +129,35 @@ class AuthService {
     } else if (response.statusCode == 409) {
       throw IntegrityErrorAuthException();
     }
+  }
+
+  Future<void> sendPasswordResetLink(String email) async {
+    final response = await api.sendPasswordResetLinkAPIResponse(email);
+    if (response.statusCode == 404) throw UserNotFoundAuthException();
+    if (response.statusCode == 500) throw InternalServerErrorAuthException();
+    if (response.statusCode == 409) throw IntegrityErrorAuthException();
+    if (response.statusCode != 200) throw GenericAuthException();
+  }
+}
+
+class MobileTokenAuthService {
+  Future<bool> isTokenValid() async {
+    final user = await CRUDService().getCurrentUserFromDb();
+    final token = await CRUDService().getMobileAuthTokenFromDb();
+    final uid = user.uid;
+    final response = await api.verifyMobileAuthTokenAPIResponse(
+      token,
+      uid,
+    );
+    return response.statusCode == 200 ? true : false;
+  }
+
+  Future<void> revokeToken() async {
+    final token = await CRUDService().getMobileAuthTokenFromDb();
+    final response = await api.revokeMobileAuthTokenAPIResponse(token);
+    if (response.statusCode == 404) throw TokenNotFoundAuthException();
+    if (response.statusCode == 500) throw InternalServerErrorAuthException();
+    if (response.statusCode == 409) throw IntegrityErrorAuthException();
+    if (response.statusCode != 200) throw GenericAuthException();
   }
 }

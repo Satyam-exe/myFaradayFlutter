@@ -16,6 +16,7 @@ class _LogInViewState extends State<LogInView> {
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _password = TextEditingController();
+  bool rememberMeCheckboxValue = false;
 
   @override
   void dispose() {
@@ -49,12 +50,27 @@ class _LogInViewState extends State<LogInView> {
                 hintText: 'Enter your password here.',
                 labelText: 'Password',
               ),
+              validator: (value) =>
+                  value!.isEmpty ? 'Please enter your password' : null,
               obscureText: true,
+            ),
+            CheckboxListTile(
+              title: const Text('Remember me for 30 days.'),
+              value: rememberMeCheckboxValue,
+              shape: const CircleBorder(),
+              onChanged: (value) {
+                setState(
+                  () {
+                    rememberMeCheckboxValue = value!;
+                  },
+                );
+              },
             ),
             ElevatedButton(
               onPressed: () async {
                 final email = _email.text;
                 final password = _password.text;
+                final rememberMe = rememberMeCheckboxValue;
                 try {
                   if (_formKey.currentState!.validate()) {
                     showDialog(
@@ -71,6 +87,7 @@ class _LogInViewState extends State<LogInView> {
                     final user = await AuthService().logIn(
                       email: email,
                       password: password,
+                      rememberMe: rememberMe,
                     );
                     if (user != null) {
                       if (!mounted) return;
@@ -109,10 +126,9 @@ class _LogInViewState extends State<LogInView> {
             ),
             TextButton(
               onPressed: () {
-                Navigator.pushNamedAndRemoveUntil(
+                Navigator.pushNamed(
                   context,
                   resetPasswordRoute,
-                  (route) => false,
                 );
               },
               child: const Text('Forgot Password?'),

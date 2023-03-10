@@ -7,7 +7,6 @@ class AuthUser {
   bool isEmailVerified;
   bool isStaff;
   bool isSuperuser;
-  String password;
 
   AuthUser({
     required this.uid,
@@ -18,7 +17,6 @@ class AuthUser {
     required this.isSuperuser,
     required this.email,
     required this.isEmailVerified,
-    required this.password,
   });
   factory AuthUser.fromJson(Map<String, dynamic> json) {
     return AuthUser(
@@ -30,20 +28,26 @@ class AuthUser {
       isStaff: json['is_staff'],
       isSuperuser: json['is_superuser'],
       isEmailVerified: json['is_email_verified'],
-      password: json['password'],
     );
   }
   factory AuthUser.fromSqliteRow(Map<String, dynamic> row) {
+    late final bool isStaff;
+    late final bool isSuperuser;
+    late final bool isEmailVerified;
+    row['isStaff'] == 1 ? isStaff = true : isStaff = false;
+    row['isSuperuser'] == 1 ? isSuperuser = true : isSuperuser = false;
+    row['isEmailVerified'] == 1
+        ? isEmailVerified = true
+        : isEmailVerified = false;
     return AuthUser(
       uid: row['uid'],
       firstName: row['firstName'],
       lastName: row['lastName'],
       phoneNumber: row['phoneNumber'],
-      isStaff: row['isStaff'],
-      isSuperuser: row['isSuperuser'],
+      isStaff: isStaff,
+      isSuperuser: isSuperuser,
       email: row['email'],
-      isEmailVerified: row['isEmailVerified'],
-      password: row['password'],
+      isEmailVerified: isEmailVerified,
     );
   }
 }

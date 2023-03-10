@@ -1,80 +1,36 @@
+import 'package:app/constants/crud/crud_columns.dart';
+import 'package:app/constants/crud/crud_queries.dart';
+import 'package:app/constants/crud/crud_tables.dart';
 import 'package:app/models/auth/auth_user.dart';
+import 'package:app/services/auth/auth_service.dart';
 import 'package:app/services/crud/crud_exceptions.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-const _dbName = 'erenjaeger.aot';
-const _authUserTable = 'AuthUser';
-const _userProfileTable = 'UserProfile';
-const _homeAddressTable = 'HomeAddress';
-
-const _uidColumn = 'uid';
-const _firstNameColumn = 'firstName';
-const _lastNameColumn = 'lastName';
-const _emailColumn = 'email';
-const _phoneNumberColumn = 'phoneNumber';
-const _isStaffColumn = 'isStaff';
-const _isSuperuserColumn = 'isSuperuser';
-const _isEmailVerifiedColumn = 'isEmailVerified';
-const _passwordColumn = 'password';
-
-const _createAuthUserTableQuery = """
-CREATE TABLE "AuthUser" (
-	"uid"	INTEGER NOT NULL UNIQUE,
-	"firstName"	TEXT NOT NULL,
-	"lastName"	TEXT NOT NULL,
-	"email"	TEXT NOT NULL UNIQUE,
-	"phoneNumber"	TEXT NOT NULL UNIQUE,
-	"isEmailVerified"	INTEGER NOT NULL,
-	"isStaff"	INTEGER NOT NULL,
-	"isSuperuser"	INTEGER NOT NULL,
-	PRIMARY KEY("uid")
-)
-""";
-
-const _createUserProfileTableQuery = """
-CREATE TABLE "UserProfile" (
-	"uid"	INTEGER NOT NULL UNIQUE,
-	"firstName"	BLOB NOT NULL,
-	"lastName"	INTEGER NOT NULL,
-	"email"	INTEGER NOT NULL UNIQUE,
-	"phoneNumber"	INTEGER NOT NULL UNIQUE,
-	"dateOfBirth"	INTEGER,
-	"profilePicture"	TEXT,
-	PRIMARY KEY("uid"),
-	FOREIGN KEY("uid") REFERENCES "AuthUser"("uid")
-)
-""";
-
-const _createHomeAddressTableQuery = """
-CREATE TABLE "HomeAddress" (
-	"address1"	INTEGER NOT NULL,
-	"address"	TEXT NOT NULL,
-	"pincode"	INTEGER NOT NULL,
-	"city"	TEXT NOT NULL,
-	"state"	TEXT NOT NULL,
-	"latitude"	REAL,
-	"longitude"	REAL,
-	"uid"	INTEGER NOT NULL UNIQUE,
-	PRIMARY KEY("uid"),
-	FOREIGN KEY("uid") REFERENCES "UserProfile"("uid")
-)
-""";
-
 class CRUDService {
   Database? _db;
+
+  Future<bool> doesDatabaseExist() async {
+    try {
+      await getCurrentUserFromDb();
+      return true;
+    } on DatabaseNotFoundException {
+      return false;
+    }
+  }
 
   Future<void> open() async {
     if (_db != null) throw DatabaseAlreadyOpenException();
     try {
       final docsPath = await getApplicationDocumentsDirectory();
-      final dbPath = join(docsPath.path, _dbName);
+      final dbPath = join(docsPath.path, dbName);
       final db = await openDatabase(dbPath);
       _db = db;
-      await db.execute(_createAuthUserTableQuery);
-      await db.execute(_createUserProfileTableQuery);
-      await db.execute(_createHomeAddressTableQuery);
+      await db.execute(createAuthUserTableQuery);
+      await db.execute(createUserProfileTableQuery);
+      await db.execute(createHomeAddressTableQuery);
+      await db.execute(createMobileAuthTokenTableQuery);
     } on MissingPlatformDirectoryException {
       throw UnableToGetDocumentsDirectoryException();
     }
@@ -108,41 +64,72 @@ class CRUDService {
   }
 
   Future<AuthUser> getCurrentUserFromDb() async {
-    _ensureDbIsOpen();
+    await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
-    final row = await db.query(_authUserTable, limit: 1);
-    AuthUser user = AuthUser.fromSqliteRow(row.first);
-    return user;
+    try {
+      final row = await db.query(authUserTable, limit: 1);
+      AuthUser user = AuthUser.fromSqliteRow(row.first);
+      return user;
+    } on StateError {
+      throw DatabaseNotFoundException();
+    }
   }
 
   Future<void> insertUserIntoDb(AuthUser user) async {
-    _ensureDbIsOpen();
+    await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
-    await db.insert(_authUserTable, {
-      _uidColumn: user.uid,
-      _firstNameColumn: user.firstName,
-      _lastNameColumn: user.lastName,
-      _emailColumn: user.email,
-      _phoneNumberColumn: user.phoneNumber,
-      _isStaffColumn: user.isStaff,
-      _isSuperuserColumn: user.isSuperuser,
-      _isEmailVerifiedColumn: user.isEmailVerified,
-      _passwordColumn: user.password,
+    await db.insert(authUserTable, {
+      uidColumn: user.uid,
+      firstNameColumn: user.firstName,
+      lastNameColumn: user.lastName,
+      emailColumn: user.email,
+      phoneNumberColumn: user.phoneNumber,
+      isStaffColumn: user.isStaff,
+      isSuperuserColumn: user.isSuperuser,
+      isEmailVerifiedColumn: user.isEmailVerified,
     });
-    await db.insert(_userProfileTable, {
-      _uidColumn: user.uid,
-      _firstNameColumn: user.firstName,
-      _lastNameColumn: user.lastName,
-      _emailColumn: user.email,
-      _phoneNumberColumn: user.phoneNumber,
+    await db.insert(userProfileTable, {
+      uidColumn: user.uid,
+      firstNameColumn: user.firstName,
+      lastNameColumn: user.lastName,
+      emailColumn: user.email,
+      phoneNumberColumn: user.phoneNumber,
     });
   }
 
-  Future<void> deleteUserFromDb(AuthUser user) async {
-    _ensureDbIsOpen();
+  Future<void> deleteUserDb(AuthUser user) async {
+    await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
-    await db.delete(_authUserTable);
-    await db.delete(_userProfileTable);
-    await db.delete(_homeAddressTable);
+    await db.delete(authUserTable);
+    await db.delete(userProfileTable);
+    await db.delete(homeAddressTable);
+    await db.delete(mobileAuthTokenTable);
+  }
+
+  Future<String> getMobileAuthTokenFromDb() async {
+    await _ensureDbIsOpen();
+    final db = _getDatabaseOrThrow();
+    AuthUser user = await getCurrentUserFromDb();
+    final row = await db.query(
+      mobileAuthTokenTable,
+      limit: 1,
+      where: 'uid = ?',
+      whereArgs: [user.uid],
+    );
+    return row.first['token'].toString();
+  }
+
+  Future<void> insertMobileAuthTokenIntoDb(String token,
+      [AuthUser? user]) async {
+    await _ensureDbIsOpen();
+    final db = _getDatabaseOrThrow();
+    final AuthUser dbUser = user ?? await AuthService().currentUser;
+    await db.insert(
+      mobileAuthTokenTable,
+      {
+        uidColumn: dbUser.uid,
+        tokenColumn: token,
+      },
+    );
   }
 }

@@ -1,4 +1,4 @@
-package com.example.app
+package `in`.myfaraday.app
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -84,12 +84,10 @@ class AuthService {
     if (response.statusCode == 201) {
       AuthUser createdUser = AuthUser.fromJson(decodedJson);
       return createdUser;
+    } else if (response.statusCode == 406) {
+      throw WeakPasswordAuthException();
     } else if (response.statusCode == 400) {
-      if (decodedJson['error']['message'] == 'WEAK_PASSWORD') {
-        throw WeakPasswordAuthException();
-      } else {
-        throw EmptyFieldsAuthException();
-      }
+      throw EmptyFieldsAuthException();
     } else if (response.statusCode == 409) {
       final errorMessage = decodedJson['error']['message'];
       if (errorMessage == 'PHONE_NUMBER_ALREADY_IN_USE') {

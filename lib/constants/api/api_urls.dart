@@ -6,5 +6,5 @@ const confirmPasswordResetAPIUrl = '${apiUrl}auth/passwordresetconfirm/';
 const sendEmailVerificationAPIUrl = '${apiUrl}auth/sendemailverification/';
 const verifyEmailAPIUrl = '${apiUrl}auth/verifyemail/';
 const getUsersAPIUrl = '${apiUrl}auth/users/';
-const verifyMobileAuthTokenAPIUrl = '${apiUrl}auth/verifytoken/';
 const mobileAuthTokenAPIUrl = '${apiUrl}auth/mobiletoken/';
+const verifyMobileAuthTokenAPIUrl = '${mobileAuthTokenAPIUrl}verify/';

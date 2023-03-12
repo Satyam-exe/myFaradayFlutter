@@ -6,7 +6,7 @@ import 'package:app/services/crud/crud_service.dart';
 import 'package:app/views/auth/reset_password_view.dart';
 import 'package:app/views/auth/log_in_view.dart';
 import 'package:app/views/auth/sign_up.dart';
-import 'package:app/views/logged_in_view.dart';
+import 'package:app/views/home/logged_in_view.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -17,9 +17,9 @@ void main() {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(),
+      home: const StartUpView(),
       routes: {
-        homeRoute: (context) => const MyHomePage(),
+        homeRoute: (context) => const StartUpView(),
         signUpRoute: (context) => const SignUpView(),
         loggedInRoute: (context) => const LoggedInView(),
         logInRoute: (context) => const LogInView(),
@@ -29,8 +29,8 @@ void main() {
   );
 }
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({Key? key}) : super(key: key);
+class StartUpView extends StatelessWidget {
+  const StartUpView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

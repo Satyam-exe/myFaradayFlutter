@@ -59,7 +59,7 @@ Future<http.Response> sendEmailVerificationAPIResponse(int uid) async {
 
 Future<http.Response> getUserByUIDAPIResponse(int uid) async {
   final response = await http.get(
-    Uri.parse('${getUsersAPIUrl}uid/$uid/'),
+    Uri.parse('${usersAPIUrl}uid/$uid/'),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8'
     },
@@ -69,7 +69,7 @@ Future<http.Response> getUserByUIDAPIResponse(int uid) async {
 
 Future<http.Response> getUserByEmailAPIResponse(String email) async {
   final response = await http.get(
-    Uri.parse('${getUsersAPIUrl}email/$email/'),
+    Uri.parse('${usersAPIUrl}email/$email/'),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8'
     },
@@ -80,7 +80,7 @@ Future<http.Response> getUserByEmailAPIResponse(String email) async {
 Future<http.Response> getUserByPhoneNumberAPIResponse(
     String phoneNumber) async {
   final response = await http.get(
-    Uri.parse('${getUsersAPIUrl}phone/$phoneNumber/'),
+    Uri.parse('${usersAPIUrl}phone/$phoneNumber/'),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8'
     },

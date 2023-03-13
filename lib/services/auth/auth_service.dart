@@ -54,7 +54,7 @@ class AuthService {
       await CRUDService().insertUserIntoDb(user);
       await CRUDService().insertMobileAuthTokenIntoDb(token, user);
       return user;
-    } else if (response.statusCode == 400) {
+    } else if (response.statusCode == 404) {
       throw InvalidCredentialsAuthException();
     } else if (response.statusCode == 401) {
       throw EmailNotVerifiedAuthException();
@@ -120,7 +120,7 @@ class AuthService {
     final user = await getUserByEmail(email);
     final uid = user.uid;
     final response = await api.sendEmailVerificationAPIResponse(uid);
-    if (response.statusCode == 400) {
+    if (response.statusCode == 404) {
       throw UserNotFoundAuthException();
     } else if (response.statusCode == 500) {
       throw InternalServerErrorAuthException();

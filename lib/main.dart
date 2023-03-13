@@ -6,7 +6,7 @@ import 'package:app/services/crud/crud_service.dart';
 import 'package:app/views/auth/reset_password_view.dart';
 import 'package:app/views/auth/log_in_view.dart';
 import 'package:app/views/auth/sign_up.dart';
-import 'package:app/views/home/logged_in_view.dart';
+import 'package:app/views/home/home_view.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -21,7 +21,7 @@ void main() {
       routes: {
         homeRoute: (context) => const StartUpView(),
         signUpRoute: (context) => const SignUpView(),
-        loggedInRoute: (context) => const LoggedInView(),
+        loggedInRoute: (context) => const HomeView(),
         logInRoute: (context) => const LogInView(),
         resetPasswordRoute: (context) => const ResetPasswordView(),
       },
@@ -64,7 +64,7 @@ class StartUpView extends StatelessWidget {
                   return const LogInView();
                 } else {
                   log('Return loggedinview');
-                  return const LoggedInView();
+                  return const HomeView();
                 }
               },
             );

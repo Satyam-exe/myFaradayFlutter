@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS "AuthUser" (
 	"isEmailVerified"	INTEGER NOT NULL,
 	"isStaff"	INTEGER NOT NULL,
 	"isSuperuser"	INTEGER NOT NULL,
+  "signedUp" TEXT NOT NULL,
 	PRIMARY KEY("uid")
 )
 """;

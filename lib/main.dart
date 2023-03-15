@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:app/constants/routes.dart';
 import 'package:app/services/auth/auth_service.dart';
 import 'package:app/services/crud/crud_service.dart';
+import 'package:app/utilities/dialogs/error_dialog.dart';
 import 'package:app/views/auth/reset_password_view.dart';
 import 'package:app/views/auth/log_in_view.dart';
 import 'package:app/views/auth/sign_up.dart';
@@ -50,24 +51,30 @@ class StartUpView extends StatelessWidget {
             log('no data in db or doesnt exist');
             return const LogInView();
           } else {
-            log('db exists');
-            return FutureBuilder<bool>(
-              future: MobileTokenAuthService().isTokenValid(),
-              builder: (context, tokenSnapshot) {
-                if (tokenSnapshot.connectionState == ConnectionState.waiting) {
-                  log('TokenConnection state is waiting or none');
-                  return const Center(child: CircularProgressIndicator());
-                } else if (!tokenSnapshot.hasData ||
-                    tokenSnapshot.data == false) {
-                  log('No data or token isnt valid');
-                  Future(() => AuthService().logOut());
-                  return const LogInView();
-                } else {
-                  log('Return loggedinview');
-                  return const HomeView();
-                }
-              },
-            );
+            try {
+              log('db exists');
+              return FutureBuilder<bool>(
+                future: MobileTokenAuthService().isTokenValid(),
+                builder: (context, tokenSnapshot) {
+                  if (tokenSnapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    log('TokenConnection state is waiting or none');
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (!tokenSnapshot.hasData ||
+                      tokenSnapshot.data == false) {
+                    log('No data or token isnt valid');
+                    Future(() => AuthService().logOut());
+                    return const LogInView();
+                  } else {
+                    log('Return loggedinview');
+                    return const HomeView();
+                  }
+                },
+              );
+            } catch (e) {
+              return showErrorDialog(
+                  context, 'Something Went Wrong!\nError: ${e.toString()}');
+            }
           }
         },
       ),

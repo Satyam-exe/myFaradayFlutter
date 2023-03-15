@@ -7,3 +7,4 @@ const isStaffColumn = 'isStaff';
 const isSuperuserColumn = 'isSuperuser';
 const isEmailVerifiedColumn = 'isEmailVerified';
 const tokenColumn = 'token';
+const signedUpColumn = 'signedUp';

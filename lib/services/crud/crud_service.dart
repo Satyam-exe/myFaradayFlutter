@@ -87,6 +87,7 @@ class CRUDService {
       isStaffColumn: user.isStaff,
       isSuperuserColumn: user.isSuperuser,
       isEmailVerifiedColumn: user.isEmailVerified,
+      signedUpColumn: user.signedUp.toString(),
     });
     await db.insert(userProfileTable, {
       uidColumn: user.uid,

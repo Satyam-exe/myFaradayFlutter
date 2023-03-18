@@ -28,7 +28,6 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
       appBar: AppBar(
         title: const Text('Reset Password'),
       ),
-      backgroundColor: Colors.lightBlue[200],
       body: Center(
         child: Container(
           decoration: const ShapeDecoration(

@@ -18,5 +18,5 @@ var accountsBottomNavigationBarItems = <BottomNavigationBarItem>[
   const BottomNavigationBarItem(
       icon: Icon(Icons.edit_sharp), label: 'Edit Profile'),
   const BottomNavigationBarItem(
-      icon: Icon(Icons.support_agent_sharp), label: 'Contact Support'),
+      icon: Icon(Icons.support_agent_sharp), label: 'Contact'),
 ];

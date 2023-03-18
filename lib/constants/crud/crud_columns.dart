@@ -8,3 +8,7 @@ const isSuperuserColumn = 'isSuperuser';
 const isEmailVerifiedColumn = 'isEmailVerified';
 const tokenColumn = 'token';
 const signedUpColumn = 'signedUp';
+
+const dateOfBirthColumn = 'dateOfBirth';
+const genderColumn = 'gender';
+const profilePictureColumn = 'profilePicture';

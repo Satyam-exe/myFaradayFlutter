@@ -3,12 +3,14 @@ import 'dart:developer';
 import 'package:app/constants/routes.dart';
 import 'package:app/services/auth/auth_service.dart';
 import 'package:app/services/crud/crud_service.dart';
-import 'package:app/utilities/dialogs/error_dialog.dart';
-import 'package:app/views/auth/reset_password_view.dart';
+import 'package:app/views/account/account_view.dart';
+import 'package:app/views/account/overview/accounts_overview.dart';
 import 'package:app/views/auth/log_in_view.dart';
+import 'package:app/views/auth/reset_password_view.dart';
 import 'package:app/views/auth/sign_up.dart';
 import 'package:app/views/home/home_view.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,11 +22,13 @@ void main() {
       ),
       home: const StartUpView(),
       routes: {
-        homeRoute: (context) => const StartUpView(),
         signUpRoute: (context) => const SignUpView(),
         loggedInRoute: (context) => const HomeView(),
         logInRoute: (context) => const LogInView(),
         resetPasswordRoute: (context) => const ResetPasswordView(),
+        homeRoute: (context) => const HomeView(),
+        accountRoute: (context) => const AccountView(),
+        accountOverviewRoute: (context) => const AccountsOverviewView(),
       },
     ),
   );
@@ -35,49 +39,42 @@ class StartUpView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: FutureBuilder<bool>(
-        future: CRUDService().doesDatabaseExist(),
-        builder: (BuildContext context, AsyncSnapshot<bool> dbSnapshot) {
-          if (dbSnapshot.connectionState == ConnectionState.waiting ||
-              dbSnapshot.connectionState == ConnectionState.none) {
-            log('DBConnection state is waiting or none');
-            return const Center(
-              child: CircularProgressIndicator(
-                color: Colors.black54,
-              ),
-            );
-          } else if (!dbSnapshot.hasData || dbSnapshot.data == false) {
-            log('no data in db or doesnt exist');
-            return const LogInView();
+    return FutureBuilder<bool>(
+      future: _checkDatabaseAndToken(),
+      builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          if (snapshot.hasData && snapshot.data!) {
+            return const HomeView();
           } else {
-            try {
-              log('db exists');
-              return FutureBuilder<bool>(
-                future: MobileTokenAuthService().isTokenValid(),
-                builder: (context, tokenSnapshot) {
-                  if (tokenSnapshot.connectionState ==
-                      ConnectionState.waiting) {
-                    log('TokenConnection state is waiting or none');
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (!tokenSnapshot.hasData ||
-                      tokenSnapshot.data == false) {
-                    log('No data or token isnt valid');
-                    Future(() => AuthService().logOut());
-                    return const LogInView();
-                  } else {
-                    log('Return loggedinview');
-                    return const HomeView();
-                  }
-                },
-              );
-            } catch (e) {
-              return showErrorDialog(
-                  context, 'Something Went Wrong!\nError: ${e.toString()}');
-            }
+            return const LogInView();
           }
-        },
-      ),
+        } else {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+      },
     );
+  }
+
+  Future<bool> _checkDatabaseAndToken() async {
+    bool doesDatabaseExist = await CRUDService().doesDatabaseExist();
+
+    if (!doesDatabaseExist) {
+      log('db does not exist');
+      return false;
+    }
+
+    bool isTokenValid = await MobileTokenAuthService().isTokenValid();
+
+    if (!isTokenValid) {
+      await AuthService().logOut();
+      log('token invalid');
+      return false;
+    }
+
+    await CRUDService().updateDbOnStartUp();
+
+    return true;
   }
 }

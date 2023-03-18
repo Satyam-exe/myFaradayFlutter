@@ -1,6 +1,8 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:app/constants/api/api_urls.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 Future<http.Response> signUpAPIResponse(
   String firstName,
@@ -31,6 +33,7 @@ Future<http.Response> logInAPIResponse(
   String password,
   int requestedTimeInDays,
 ) async {
+  log('in logInApiResponse rn, url is $logInAPIUrl');
   final response = await http.post(
     Uri.parse(logInAPIUrl),
     headers: <String, String>{

@@ -3,8 +3,8 @@ import 'package:app/services/auth/auth_exceptions.dart';
 import 'package:app/services/auth/auth_service.dart';
 import 'package:app/utilities/dialogs/error_dialog.dart';
 import 'package:app/utilities/dialogs/success_dialog.dart';
-import 'package:flutter/material.dart';
 import 'package:app/utilities/forms/input_validation.dart';
+import 'package:flutter/material.dart';
 
 class SignUpView extends StatefulWidget {
   const SignUpView({super.key});
@@ -39,7 +39,6 @@ class _SignUpViewState extends State<SignUpView> {
       appBar: AppBar(
         title: const Text('myFaraday'),
       ),
-      backgroundColor: Colors.lightBlue[200],
       body: Center(
         child: Container(
           decoration: const ShapeDecoration(

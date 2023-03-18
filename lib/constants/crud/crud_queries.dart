@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS "UserProfile" (
 	"email"	INTEGER NOT NULL UNIQUE,
 	"phoneNumber"	INTEGER NOT NULL UNIQUE,
 	"dateOfBirth"	INTEGER,
+	"gender" TEXT,
 	"profilePicture"	TEXT,
 	PRIMARY KEY("uid"),
 	FOREIGN KEY("uid") REFERENCES "AuthUser"("uid")

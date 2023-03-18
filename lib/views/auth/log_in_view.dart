@@ -31,7 +31,6 @@ class _LogInViewState extends State<LogInView> {
       appBar: AppBar(
         title: const Text('myFaraday'),
       ),
-      backgroundColor: Colors.lightBlue[200],
       body: Center(
         child: Container(
           decoration: const ShapeDecoration(

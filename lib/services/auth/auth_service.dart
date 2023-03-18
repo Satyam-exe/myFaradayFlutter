@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'dart:developer';
+
 import 'package:app/models/auth/auth_user.dart';
 import 'package:app/services/api/auth/auth_api.dart' as api;
 import 'package:app/services/auth/auth_exceptions.dart';
 import 'package:app/services/crud/crud_service.dart';
 
 class AuthService {
-  Future<AuthUser> get currentUser => CRUDService().getCurrentUserFromDb();
+  Future<AuthUser> get currentUser async =>
+      await CRUDService().getCurrentUserFromDb();
 
   Future<AuthUser> getUserByUID(int uid) async {
     final response = await api.getUserByUIDAPIResponse(uid);
@@ -42,7 +44,7 @@ class AuthService {
     if (rememberMe == true) {
       requestedTimeInDays = 30;
     } else {
-      requestedTimeInDays = 90;
+      requestedTimeInDays = 10;
     }
     final response =
         await api.logInAPIResponse(email, password, requestedTimeInDays);
@@ -109,10 +111,10 @@ class AuthService {
   Future<void> logOut() async {
     try {
       await MobileTokenAuthService().revokeToken();
-      await CRUDService().deleteUserDb(await AuthService().currentUser);
+      await CRUDService().deleteUserDb();
       await CRUDService().close();
-    } on Exception {
-      // Empty
+    } on Exception catch (e) {
+      log(e.toString());
     }
   }
 

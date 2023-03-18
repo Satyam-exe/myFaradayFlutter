@@ -1,9 +1,15 @@
+import 'dart:convert';
+
 import 'package:app/constants/crud/crud_columns.dart';
 import 'package:app/constants/crud/crud_queries.dart';
 import 'package:app/constants/crud/crud_tables.dart';
 import 'package:app/models/auth/auth_user.dart';
+import 'package:app/models/profile/profile.dart';
+import 'package:app/services/api/auth/auth_api.dart' as auth_api;
+import 'package:app/services/api/profile/profile_api.dart' as profile_api;
 import 'package:app/services/auth/auth_service.dart';
 import 'package:app/services/crud/crud_exceptions.dart';
+import 'package:app/services/profile/profile_service.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -75,30 +81,54 @@ class CRUDService {
     }
   }
 
+  Future<Profile> getCurrentProfileFromDb() async {
+    await _ensureDbIsOpen();
+    final db = _getDatabaseOrThrow();
+    try {
+      final row = await db.query(userProfileTable, limit: 1);
+      Profile profile = Profile.fromSqliteRow(row.first);
+      return profile;
+    } on StateError {
+      throw DatabaseNotFoundException();
+    }
+  }
+
   Future<void> insertUserIntoDb(AuthUser user) async {
     await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
-    await db.insert(authUserTable, {
-      uidColumn: user.uid,
-      firstNameColumn: user.firstName,
-      lastNameColumn: user.lastName,
-      emailColumn: user.email,
-      phoneNumberColumn: user.phoneNumber,
-      isStaffColumn: user.isStaff,
-      isSuperuserColumn: user.isSuperuser,
-      isEmailVerifiedColumn: user.isEmailVerified,
-      signedUpColumn: user.signedUp.toString(),
-    });
-    await db.insert(userProfileTable, {
-      uidColumn: user.uid,
-      firstNameColumn: user.firstName,
-      lastNameColumn: user.lastName,
-      emailColumn: user.email,
-      phoneNumberColumn: user.phoneNumber,
-    });
+    await db.insert(
+      authUserTable,
+      {
+        uidColumn: user.uid,
+        firstNameColumn: user.firstName,
+        lastNameColumn: user.lastName,
+        emailColumn: user.email,
+        phoneNumberColumn: user.phoneNumber,
+        isStaffColumn: user.isStaff,
+        isSuperuserColumn: user.isSuperuser,
+        isEmailVerifiedColumn: user.isEmailVerified,
+        signedUpColumn: user.signedUp.toString(),
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    Profile profile = await ProfileService().getProfile(user.uid);
+    await db.insert(
+      userProfileTable,
+      {
+        uidColumn: user.uid,
+        firstNameColumn: user.firstName,
+        lastNameColumn: user.lastName,
+        emailColumn: user.email,
+        phoneNumberColumn: user.phoneNumber,
+        profilePictureColumn: profile.profilePicture,
+        dateOfBirthColumn: profile.dateOfBirth,
+        genderColumn: profile.gender,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
-  Future<void> deleteUserDb(AuthUser user) async {
+  Future<void> deleteUserDb() async {
     await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
     await db.delete(authUserTable);
@@ -131,6 +161,38 @@ class CRUDService {
         uidColumn: dbUser.uid,
         tokenColumn: token,
       },
+      conflictAlgorithm: ConflictAlgorithm.replace,
     );
+  }
+
+  Future<void> updateDbOnStartUp() async {
+    await _ensureDbIsOpen();
+    final db = _getDatabaseOrThrow();
+    final AuthUser dbUser = await getCurrentUserFromDb();
+    final userResponse = await auth_api.getUserByUIDAPIResponse(dbUser.uid);
+    final AuthUser updatedUser =
+        AuthUser.fromJson(jsonDecode(userResponse.body));
+    final profileResponse = await profile_api.getProfileAPIResponse(dbUser.uid);
+    final Profile updatedProfile =
+        Profile.fromJson(jsonDecode(profileResponse.body));
+    await db.update(authUserTable, {
+      firstNameColumn: updatedUser.firstName,
+      lastNameColumn: updatedUser.lastName,
+      emailColumn: updatedUser.email,
+      phoneNumberColumn: updatedUser.phoneNumber,
+      signedUpColumn: updatedUser.signedUp.toString(),
+      isStaffColumn: updatedUser.isStaff,
+      isSuperuserColumn: updatedUser.isSuperuser,
+      isEmailVerifiedColumn: updatedUser.isEmailVerified,
+    });
+    await db.update(userProfileTable, {
+      firstNameColumn: updatedUser.firstName,
+      lastNameColumn: updatedUser.lastName,
+      emailColumn: updatedUser.email,
+      phoneNumberColumn: updatedUser.phoneNumber,
+      dateOfBirthColumn: updatedProfile.dateOfBirth,
+      genderColumn: updatedProfile.gender,
+      profilePictureColumn: updatedProfile.profilePicture,
+    });
   }
 }

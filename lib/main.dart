@@ -10,7 +10,6 @@ import 'package:app/views/auth/reset_password_view.dart';
 import 'package:app/views/auth/sign_up.dart';
 import 'package:app/views/home/home_view.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

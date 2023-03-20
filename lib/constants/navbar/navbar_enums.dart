@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 var bottomNavigationBarItems = <BottomNavigationBarItem>[
   const BottomNavigationBarItem(icon: Icon(Icons.home_sharp), label: 'Home'),
   const BottomNavigationBarItem(
-      icon: Icon(Icons.electric_bolt_sharp), label: 'Electrician'),
-  const BottomNavigationBarItem(
-      icon: Icon(Icons.plumbing_sharp), label: 'Plumber'),
+      icon: Icon(Icons.new_label_sharp), label: 'Request'),
   const BottomNavigationBarItem(
       icon: Icon(Icons.account_circle_sharp), label: 'Account')
 ];

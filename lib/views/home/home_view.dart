@@ -10,17 +10,12 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  int _selectedIndex = 3;
+  int _selectedIndex = 2;
 
   static const List<Widget> _widgetOptions = <Widget>[
+    Text('to implement'),
     Text(
-      'Index 0: Home',
-    ),
-    Text(
-      'Index 1: Electrician',
-    ),
-    Text(
-      'Index 2: Plumber',
+      'Index 1: Request',
     ),
     AccountView()
   ];

@@ -1,4 +1,5 @@
 import 'package:app/constants/navbar/navbar_enums.dart';
+import 'package:app/views/account/edit_profile/edit_profile.dart';
 import 'package:app/views/account/overview/accounts_overview.dart';
 import 'package:flutter/material.dart';
 
@@ -16,9 +17,7 @@ class _AccountViewState extends State<AccountView> {
     Text(
       'Index 1: Past Requests',
     ),
-    Text(
-      'Index 2: Edit Profile',
-    ),
+    EditProfileView(),
     Text(
       'Index 3: Contact Support',
     )
